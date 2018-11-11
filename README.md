@@ -4,11 +4,41 @@ The following is a collection of tips I find to be useful when working with the 
 
 # Summary
 
+* [#04 Dealing with expirable values](#dealing-with-expirable-values)
 * [#03 Manufacturing cache-efficient versions of pure functions](#manufacturing-cache-efficient-versions-of-pure-functions)
 * [#02 Defining a union type](#defining-a-union-type)
 * [#01 Solving callback hell with function composition](#solving-callback-hell-with-function-composition)
 
 # Tips
+
+## Dealing with expirable values
+
+It might happen that your code has to deal with values that come with an expiration date. In a game, it could be a score multiplier that will only last for 30 seconds. Or it could be an authentication token for an API, with a 15 minutes lifespan. In both instances you can rely on the type `Expirable` to encapsulate the expiration logic.
+
+```kotlin
+import java.util.*
+
+class Expirable<Value>(var innerValue: Value, var expirationDate: Date) {
+
+    val value: Value?
+        get() = if (hasExpired()) null else innerValue
+
+    constructor(value: Value, duration: Long) : this(value, Date(Date().time + duration ))
+
+    fun hasExpired(): Boolean {
+        return expirationDate < Date()
+    }
+}
+
+fun main(args: Array<String>) {
+    val expirable = Expirable(42,3000)
+
+    Thread.sleep(2000)
+    println(expirable.value) // 42
+    Thread.sleep(2000)
+    println(expirable.value) // null
+}
+```
 
 ## Manufacturing cache-efficient versions of pure functions
 
