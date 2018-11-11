@@ -4,10 +4,37 @@ The following is a collection of tips I find to be useful when working with the 
 
 # Summary
 
+* [#03 Manufacturing cache-efficient versions of pure functions](#manufacturing-cache-efficient-versions-of-pure-functions)
 * [#02 Defining a union type](#defining-a-union-type)
 * [#01 Solving callback hell with function composition](#solving-callback-hell-with-function-composition)
 
 # Tips
+
+## Manufacturing cache-efficient versions of pure functions
+
+By capturing a local variable in a returned lambda, it is possible to manufacture cache-efficient versions of [pure functions](https://en.wikipedia.org/wiki/Pure_function). Be careful though, this trick only works with non-recursive function!
+
+```kotlin
+import kotlin.system.measureNanoTime
+
+fun <In, Out> cached(f: (In) -> Out): (In) -> Out {
+    val cache = mutableMapOf<In, Out>()
+
+    return { input: In ->
+        cache.computeIfAbsent(input, f)
+    }
+}
+
+fun main(args : Array<String>) {
+    val cachedCos = cached { x: Double -> Math.cos(x) }
+
+    println(measureNanoTime { cachedCos(Math.PI * 2) }) // 329378 ns
+
+    /* value of cos for 2π is now cached */
+
+    println(measureNanoTime { cachedCos(Math.PI * 2) }) // 6286 ns
+}
+```
 
 ## Defining a union type
 
