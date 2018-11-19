@@ -4,12 +4,47 @@ The following is a collection of tips I find to be useful when working with the 
 
 # Summary
 
+* [#05 Debouncing a function call](#debouncing-a-function-call)
 * [#04 Dealing with expirable values](#dealing-with-expirable-values)
 * [#03 Manufacturing cache-efficient versions of pure functions](#manufacturing-cache-efficient-versions-of-pure-functions)
 * [#02 Defining a union type](#defining-a-union-type)
 * [#01 Solving callback hell with function composition](#solving-callback-hell-with-function-composition)
 
 # Tips
+
+## Debouncing a function call
+
+Debouncing is a very useful tool when dealing with UI inputs. Consider a search bar, whose content is used to query an API. It wouldn't make sense to perform a request for every character the user is typing, because as soon as a new character is entered, the result of the previous request has become irrelevant.
+
+Instead, our code will perform much better if we "debounce" the API call, meaning that we will wait until some delay has passed, without the input being modified, before actually performing the call.
+
+```kotlin
+import android.os.Handler
+import android.os.Looper
+
+fun debounced(delay: Long, looper: Looper = Looper.getMainLooper(), action: () -> Unit): () -> Unit {
+    val handler = Handler(looper)
+    val runnable = Runnable { action() }
+
+    return {
+        handler.removeCallbacks(runnable)
+        handler.postDelayed(runnable, delay)
+    }
+}
+
+fun main(args: Array<String>) {
+    val debouncedPrint = debounced(1000) { println("Action performed!") }
+
+    debouncedPrint()
+    debouncedPrint()
+    debouncedPrint()
+
+    // After a 1 second delay, this gets
+    // printed only once to the console:
+
+    // Action performed!
+}
+```
 
 ## Dealing with expirable values
 
