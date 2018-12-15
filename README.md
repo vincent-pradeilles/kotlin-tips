@@ -141,7 +141,7 @@ Many third-party frameworks or native language constructs are able to tackle thi
 ```kotlin
 sealed class Result<out T> {
     data class Value<out T>(val value: T) : Result<T>()
-    data class Error(val error: Error) : Result<Nothing>()
+    data class Error(val error: kotlin.Error) : Result<Nothing>()
 }
 
 typealias CompletionHandler<T> = (Result<T>) -> Unit
